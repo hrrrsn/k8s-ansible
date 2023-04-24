@@ -1,0 +1,54 @@
+
+- name: Create pki directory on Ansible host
+  delegate_to: localhost  
+  file:
+    path: "{{ playbook_dir }}/pki"
+    state: directory
+
+- name: Create PKI directory structure on remote hosts
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "/etc/kubernetes/pki"
+    - "/etc/kubernetes/pki/etcd"
+  when:
+    - inventory_hostname != groups['control'][0]
+    - not kubernetes_deployment_check.stat.exists
+
+- name: Copy cluster certificates to local host
+  fetch:
+    src: "{{ item.src }}"
+    dest: "{{ playbook_dir }}/pki/{{ item.dest }}"
+    flat: yes
+  with_items:
+    - { src: '/etc/kubernetes/pki/ca.crt', dest: "ca.crt" }
+    - { src: '/etc/kubernetes/pki/ca.key', dest: "ca.key" }
+    - { src: '/etc/kubernetes/pki/sa.key', dest: "sa.key" }
+    - { src: '/etc/kubernetes/pki/sa.pub', dest: "sa.pub" }
+    - { src: '/etc/kubernetes/pki/front-proxy-ca.crt', dest: "front-proxy-ca.crt" }
+    - { src: '/etc/kubernetes/pki/front-proxy-ca.key', dest: "front-proxy-ca.key" }
+    - { src: '/etc/kubernetes/pki/etcd/ca.crt', dest: "etcd/ca.crt" }
+    - { src: '/etc/kubernetes/pki/etcd/ca.key', dest: "etcd/ca.key" }
+  register: fetch_result
+  when:
+    - inventory_hostname == groups['control'][0]
+
+- name: Copy Kubernetes certificates to non-bootstrapped nodes
+  copy:
+    src: "{{ playbook_dir }}/pki/{{ item }}"
+    dest: "/etc/kubernetes/pki/{{ item }}"
+  with_items:
+    - ca.crt
+    - ca.key
+    - sa.key
+    - sa.pub
+    - front-proxy-ca.crt
+    - front-proxy-ca.key
+    - etcd/ca.crt
+    - etcd/ca.key
+  when:
+    - inventory_hostname != groups['control'][0]
+    - not kubernetes_deployment_check.stat.exists
+    - "'control' in group_names"
+

@@ -1,0 +1,38 @@
+- name: Obtain cluster join token
+  shell: kubeadm token create --print-join-command --groups system:bootstrappers:kubeadm:default-node-token
+  register: join_command
+  run_once: true
+  when:
+    - "'control' in group_names"
+    - inventory_hostname == groups['control'][0]
+
+- name: Join control plane nodes to cluster
+  shell: "{{ join_command.stdout }} --control-plane"
+  when:
+    - "'control' in group_names"
+    - not inventory_hostname == groups['control'][0]
+    - not kubernetes_deployment_check.stat.exists
+
+- name: Join worker nodes to cluster
+  shell: "{{ join_command.stdout }}"
+  when:
+    - "'worker' in group_names"
+    - not kubernetes_deployment_check.stat.exists
+
+- name: Get username
+  set_fact:
+    remote_regular_user: "{{ ansible_env.SUDO_USER or ansible_user_id }}"
+
+- name: Copy kubectl config to remote users
+  command: "{{ item }}"
+  with_items:
+    - mkdir -p /root/.kube
+    - /bin/cp -rf /etc/kubernetes/admin.conf /root/.kube/config
+    - chown root:root /root/.kube/config
+    - mkdir -p /home/{{ remote_regular_user }}/.kube
+    - /bin/cp -rf /etc/kubernetes/admin.conf /home/{{ remote_regular_user }}/.kube/config
+    - chown {{ remote_regular_user }}:{{ remote_regular_user }} /home/{{ remote_regular_user }}/.kube/config
+  when:
+    - not inventory_hostname == groups['control'][0]
+    - not kubernetes_deployment_check.stat.exists
+    - "'control' in group_names"

@@ -1,0 +1,33 @@
+- name: Deploy Kubernetes cluster
+  hosts: all
+  become: yes
+  gather_facts: yes
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Check for existing Kubernetes deployments
+      stat:
+        path: /etc/kubernetes/kubelet.conf
+      register: kubernetes_deployment_check
+
+    - name: Configure system
+      include_tasks: tasks/01-configure-system.yml
+
+    - name: Bootstrap cluster
+      include_tasks: tasks/02-bootstrap.yml
+      when:
+        - inventory_hostname == groups['control'][0]
+        - not kubernetes_deployment_check.stat.exists
+
+    - name: Configure certificates
+      include_tasks: tasks/03-certificates.yml
+
+    - name: Join nodes to cluster
+      include_tasks: tasks/04-join-cluster.yml
+
+    - name: Cleanup certificates
+      file:
+        path: "{{ playbook_dir }}/pki"
+        state: absent
+      delegate_to: localhost

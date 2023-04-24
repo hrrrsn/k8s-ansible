@@ -1,0 +1,8 @@
+# vars.yml
+kubernetes_api_hostname: api.k8s.hpg.nz
+kubernetes_virtual_ip: 10.1.20.2
+
+# Password for Keepalived API virtual IP
+# head /dev/urandom | tr -dc "[:alpha:]" | head -c16; echo
+keepalived_password: FKseBkgTKVmvxFQp
+apiserver_lb_port: 9443

@@ -1,10 +1,10 @@
 - name: Copy kubeadm config file
-  copy:
-    src: kubeadm-config.yml
+  template:
+    src: "{{ playbook_dir }}/files/kubeadm-config.yml.j2"
     dest: /root/kubeadm-config.yml
 
 - name: Initialize Kubernetes cluster
-  command: kubeadm init --config /root/kubeadm-config.yml --upload-certs
+  command: "kubeadm init --config /root/kubeadm-config.yml --upload-certs"
   args:
     creates: /etc/kubernetes/admin.conf
 
@@ -28,7 +28,22 @@
     dest: "{{ playbook_dir }}/kubeconfig"
     flat: yes
 
+- name: Copy kubeconfig to ~/.kube on Ansible host
+  fetch:
+    src: "/root/.kube/config"
+    dest: "~/.kube/config"
+    flat: yes
+
 - name: Install Flannel to cluster
   command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
   args:
     creates: /etc/cni/net.d/10-flannel.conflist
+
+# - name: Install CoreDNS
+#   command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/dns/coredns/coredns.yaml
+
+- name: Create ArgoCD namespace
+  command: kubectl create namespace argocd
+
+- name: Install ArgoCD
+  command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml

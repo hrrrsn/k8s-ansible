@@ -31,3 +31,9 @@
         path: "{{ playbook_dir }}/pki"
         state: absent
       delegate_to: localhost
+
+    - name: Configure ArgoCD
+      include_tasks: tasks/05-argocd-config.yml
+      when:
+        - inventory_hostname == groups['control'][0]
+        - not kubernetes_deployment_check.stat.exists

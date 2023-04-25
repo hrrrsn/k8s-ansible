@@ -1,8 +1,16 @@
-# vars.yml
+# Cluster Variables
+timezone: Pacific/Auckland
 kubernetes_api_hostname: api.k8s.hpg.nz
 kubernetes_virtual_ip: 10.1.20.2
+apiserver_lb_port: 9443
 
-# Password for Keepalived API virtual IP
 # head /dev/urandom | tr -dc "[:alpha:]" | head -c16; echo
 keepalived_password: FKseBkgTKVmvxFQp
-apiserver_lb_port: 9443
+
+# Schedule workloads on control plane
+kubernetes_workload_on_control_plane: true
+
+# Copy kubeconfig to ~/.kube/config on ansible host
+copy_kubeconfig: true
+
+git_repo: git@git.hpg.nz:harrison/k8s-homelab.git

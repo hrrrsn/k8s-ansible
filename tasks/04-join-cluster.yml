@@ -6,17 +6,52 @@
     - "'control' in group_names"
     - inventory_hostname == groups['control'][0]
 
+- name: Stop haproxy on nodes
+  systemd:
+    name: haproxy
+    state: stopped
+  when:
+    - "'control' in group_names"
+    - not inventory_hostname == groups['control'][0]
+    - not kubernetes_deployment_check.stat.exists
+
 - name: Join control plane nodes to cluster
-  shell: "{{ join_command.stdout }} --control-plane"
+  shell: "{{ join_command.stdout }} --control-plane --apiserver-advertise-address={{ ansible_default_ipv4.address }}"
   when:
     - "'control' in group_names"
     - not inventory_hostname == groups['control'][0]
     - not kubernetes_deployment_check.stat.exists
 
 - name: Join worker nodes to cluster
-  shell: "{{ join_command.stdout }}"
+  shell: "{{ join_command.stdout }} --apiserver-advertise-address={{ ansible_default_ipv4.address }}"
   when:
     - "'worker' in group_names"
+    - not kubernetes_deployment_check.stat.exists
+
+- name: Remove cri-o bridge configuration
+  register: crio_bridge_config_removed
+  file:
+    path: /etc/cni/net.d/100-crio-bridge.conf
+    state: absent
+  when:
+    - not inventory_hostname == groups['control'][0]
+    - not kubernetes_deployment_check.stat.exists
+
+- name: Restart CRI-O
+  ansible.builtin.systemd:
+    name: crio
+    state: restarted
+    daemon_reload: yes
+  when: crio_bridge_config_removed.changed
+
+- name: Restart haproxy
+  systemd:
+    name: haproxy
+    state: started
+    enabled: yes
+  when:
+    - "'control' in group_names"
+    - not inventory_hostname == groups['control'][0]
     - not kubernetes_deployment_check.stat.exists
 
 - name: Get username
@@ -36,3 +71,19 @@
     - not inventory_hostname == groups['control'][0]
     - not kubernetes_deployment_check.stat.exists
     - "'control' in group_names"
+
+# Workaround for Flannel bug:
+# Failed to create pod sandbox: rpc error: code = Unknown desc = failed to create pod network sandbox k8s_argocd-application-controller-0_argocd_2bde35b5-e140-4b4b-9f48-5e7a0d77ccce_0(495b4bb5bdfbba7f72c4dd0bd31a2cb18a954a373f3830fdb203b3b1975960a6): error adding pod argocd_argocd-application-controller-0 to CNI network "cbr0": plugin type="flannel" failed (add): failed to delegate add: failed to set bridge addr: "cni0" already has an IP address different from 10.244.0.1/24
+# - name: Reboot nodes
+#   ansible.builtin.reboot:
+#     reboot_timeout: 300
+#   when:
+#     - not kubernetes_deployment_check.stat.exists
+
+- name: Schedule workloads on control plane
+  command: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+  when:
+    - kubernetes_workload_on_control_plane
+    - inventory_hostname == groups['control'][0]
+
+

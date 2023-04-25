@@ -4,6 +4,7 @@
   file:
     path: "{{ playbook_dir }}/pki"
     state: directory
+    mode: 0777
 
 - name: Create PKI directory structure on remote hosts
   file:

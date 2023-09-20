@@ -5,7 +5,7 @@
 
 - name: Set system timezone
   timezone:
-    name: Pacific/Auckland
+    name: "{{ timezone }}"
 
 - name: Add Kubernetes yum repository
   copy:
@@ -35,9 +35,14 @@
     - kubectl
     - keepalived
     - haproxy
-    - cri-o
-  when:
-    - not kubernetes_deployment_check.stat.exists
+    - crio
+
+- name: Remove default cri-o bridge CNI
+  ansible.builtin.copy:
+    dest: /etc/cni/net.d/100-crio-bridge.conflist
+    content: ""
+    force: yes
+
 
 - name: Persist kernel modules
   copy:

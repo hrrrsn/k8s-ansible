@@ -13,4 +13,4 @@ kubernetes_workload_on_control_plane: true
 # Copy kubeconfig to ~/.kube/config on ansible host
 copy_kubeconfig: true
 
-git_repo: git@github.com/grant-cl/k8s-homelab.git
+git_repo: git@github.com:grant-cl/k8s-homelab.git

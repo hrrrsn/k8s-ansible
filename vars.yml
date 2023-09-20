@@ -1,6 +1,6 @@
 # Cluster Variables
 timezone: Pacific/Auckland
-kubernetes_api_hostname: api.k8s.hpg.nz
+kubernetes_api_hostname: api.k8s.home.lab
 kubernetes_virtual_ip: 10.1.20.2
 apiserver_lb_port: 9443
 

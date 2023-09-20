@@ -1,7 +1,7 @@
 # Cluster Variables
 timezone: Pacific/Auckland
 kubernetes_api_hostname: api.k8s.home.lab
-kubernetes_virtual_ip: 10.1.20.2
+kubernetes_virtual_ip: 192.168.2.120
 apiserver_lb_port: 9443
 
 # head /dev/urandom | tr -dc "[:alpha:]" | head -c16; echo
@@ -13,4 +13,4 @@ kubernetes_workload_on_control_plane: true
 # Copy kubeconfig to ~/.kube/config on ansible host
 copy_kubeconfig: true
 
-git_repo: git@git.hpg.nz:harrison/k8s-homelab.git
+git_repo: git@github.com/grant-cl/k8s-homelab.git

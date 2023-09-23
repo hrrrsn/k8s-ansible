@@ -11,21 +11,43 @@
 
 - name: Download argocd-linux-arm64 binary
   get_url:
-    url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64"
-    dest: "/tmp/argocd-linux-arm64"
-    mode: "0555"
+      url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-arm64"
+      dest: "/tmp/argocd-linux-arm64"
+      mode: "0555"
+  when: ansible_architecture == "aarch64"
 
 - name: Install argocd-linux-arm64 binary
   ansible.builtin.copy:
-    src: "/tmp/argocd-linux-arm64"
-    dest: "/usr/local/bin/argocd"
-    mode: "0555"
-    remote_src: yes
-
+      src: "/tmp/argocd-linux-arm64"
+      dest: "/usr/local/bin/argocd"
+      mode: "0555"
+      remote_src: yes
+  when: ansible_architecture == "aarch64"
 - name: Remove argocd-linux-arm64 binary from /tmp
   ansible.builtin.file:
-    path: "/tmp/argocd-linux-arm64"
-    state: absent
+      path: "/tmp/argocd-linux-arm64"
+      state: absent
+  when: ansible_architecture == "aarch64"
+
+- name: Download argocd-linux-amd64 binary
+  get_url:
+      url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64"
+      dest: "/tmp/argocd-linux-amd64"
+      mode: "0555"
+  when: ansible_architecture == "x86_64"
+
+- name: Install argocd-linux-amd64 binary
+  ansible.builtin.copy:
+      src: "/tmp/argocd-linux-amd64"
+      dest: "/usr/local/bin/argocd"
+      mode: "0555"
+      remote_src: yes
+  when: ansible_architecture == "x86_64"
+- name: Remove argocd-linux-amd64 binary from /tmp
+  ansible.builtin.file:
+      path: "/tmp/argocd-linux-amd64"
+      state: absent
+  when: ansible_architecture == "x86_64"
 
 - name: Ensure the SSH key is present on the host
   copy:

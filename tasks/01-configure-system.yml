@@ -23,6 +23,15 @@
   selinux:
     policy: targeted
     state: permissive
+    
+- name: Disable services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  loop:
+    - firewalld
+    - systemd-resolved
 
 - name: Install Kubernetes packages
   yum:
@@ -143,11 +152,5 @@
     - keepalived
     - haproxy
 
-- name: Stop firewalld service
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    enabled: no
-    state: stopped
-  loop:
-    - firewalld
+
 

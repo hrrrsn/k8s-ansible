@@ -67,10 +67,10 @@
 #   shell:
 #     cmd: "kill -9 {{ port_forward_task.ansible_job_id }}"
 
-- name: Enable Helm deployment
-  ansible.builtin.shell:
-    cmd: >
-      kubectl patch configmap argocd-cm -n argocd --type='strategic' -p '{"data": {"configManagementPlugins": "- name: kustomize-enable-helm\n  generate:\n    command: [\"sh\", \"-c\"]\n    args: [\"kustomize build --enable-helm\"]", "kustomizeBuildOptions": "--enable-helm"}}'
+#- name: Enable Helm deployment
+#  ansible.builtin.shell:
+#    cmd: >
+#      kubectl patch configmap argocd-cm -n argocd --type='strategic' -p '{"data": {"configManagementPlugins": "- name: kustomize-enable-helm\n  generate:\n    command: [\"sh\", \"-c\"]\n    args: [\"kustomize #build --enable-helm\"]", "kustomizeBuildOptions": "--enable-helm"}}'
 
 - name: Get the argocd-server pod name
   shell: kubectl -n argocd get pods -l app.kubernetes.io/name=argocd-server -o jsonpath='{.items[0].metadata.name}'

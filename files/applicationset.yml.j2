@@ -19,8 +19,6 @@ spec:
       project: default
       source:
         path: '{% raw %}{{path}}{% endraw %}'
-        plugin:
-          name: kustomize-enable-helm
         repoURL: {{ git_repo }}
         targetRevision: main
       syncPolicy:

@@ -15,5 +15,5 @@ Grant the files/argocd_key.pub access to your git repo
 Update the inventory.ini and vars.yml files with your details and run the playbook:
 
 ```bash
-ansible-playbook -i inventory.ini deploy-cluster.yml
+ansible-playbook -K -i inventory.ini deploy-cluster.yml
 ```
